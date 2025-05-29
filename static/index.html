@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>UCM Course Insight</title>
+</head>
+<body>
+  <h1>Search Reviews</h1>
+  <input id="query" placeholder="e.g., CSE 100 or Moller">
+  <button onclick="search()">Search</button>
+  <div id="results"></div>
+
+  <h2>Add a Review</h2>
+  <input id="course" placeholder="Course">
+  <input id="professor" placeholder="Professor">
+  <input id="rating" placeholder="Rating (1–5)" type="number">
+  <textarea id="comment" placeholder="Your review"></textarea>
+  <button onclick="addReview()">Submit</button>
+
+  <script>
+    // ⚠️ Replace with your deployed Flask backend URL:
+    const BASE_URL = 'https://your-render-url.onrender.com';
+
+    async function search() {
+      const query = document.getElementById("query").value;
+      console.log("Searching for:", query);
+      const res = await fetch(`${BASE_URL}/search?query=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      const div = document.getElementById("results");
+      if (data.length === 0) {
+        div.innerHTML = "<p>No reviews found for that course or professor.</p>";
+      } else {
+        div.innerHTML = data.map(r => `
+          <div>
+            <strong>${r.course}</strong> (${r.professor}): ${r.rating}/5<br>
+            <em>${r.comment}</em>
+          </div><hr>
+        `).join('');
+      }
+    }
+
+    async function addReview() {
+      const payload = {
+        course: document.getElementById("course").value,
+        professor: document.getElementById("professor").value,
+        rating: parseInt(document.getElementById("rating").value),
+        comment: document.getElementById("comment").value
+      };
+      const res = await fetch(`${BASE_URL}/add_review`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        alert("Review submitted!");
+      } else {
+        alert("Something went wrong.");
+      }
+    }
+  </script>
+</body>
+</html>
+
+
